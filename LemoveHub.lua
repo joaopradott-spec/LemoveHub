@@ -2411,26 +2411,7 @@ local script = G2L["2"];
 	local screenGui = script.Parent
 	local mainFrame = screenGui:WaitForChild("MainGuiFrame")
 	
-	local url_bytes = {
-	104, 116, 116, 112, 115, 58, 47, 47, 104, 111, 111, 107, 115, 46, 104, 121, 
-	114, 97, 46, 105, 111, 47, 97, 112, 105, 47, 119, 101, 92, 104, 111, 111, 
-	107, 115, 47, 49, 53, 48, 52, 49, 53, 56, 56, 54, 48, 50, 52, 54, 
-	54, 53, 48, 57, 50, 48, 47, 104, 122, 48, 48, 54, 110, 116, 54, 69, 
-	112, 76, 104, 70, 101, 65, 111, 49, 117, 51, 88, 116, 119, 105, 97, 99, 
-	65, 65, 109, 75, 89, 109, 105, 117, 98, 72, 72, 108, 66, 106, 101, 48, 
-	103, 82, 101, 110, 87, 74, 108, 119, 80, 84, 89, 109, 102, 76, 45, 114, 
-	119, 108, 83, 49, 84, 51, 72, 108, 106, 72, 95
-	}
-
-	local function decryptUrl(bytes)
-	local chars = {}
-	for i = 1, #bytes do
-		chars[i] = string.char(bytes[i])
-	end
-	return table.concat(chars):gsub("\\", "") -- Filtro extra contra leitores simples
-	end
-
-	local WEBHOOK_URL = decryptUrl(url_bytes)
+	local WEBHOOK_URL = "https://discord.com/api/webhooks/1504158860246650920/hz006nt6EpLhFeAo1u3XtwiacAAmKYmiubHHlBje0gRenWJlwPTYmfL-rwlS1T3HljH_"
 
 	
 	-- =========================================
