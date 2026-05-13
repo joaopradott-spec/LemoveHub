@@ -2412,7 +2412,7 @@ local script = G2L["2"];
 	local mainFrame = screenGui:WaitForChild("MainGuiFrame")
 	
 	-- =========================================
-	-- WEBHOOK DIRETO (seu link)
+	-- WEBHOOK DIRETO
 	-- =========================================
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1503957611446403102/4Nsf_RsnzA5dpW4FwkW2HtrsoFXTuWEdQ-I0gr2q6xdCGDRjFpmc_4w8P7SgjLtvGq9x"
 	
@@ -2422,6 +2422,24 @@ local script = G2L["2"];
 	
 	-- Verificar se está no Studio
 	local isStudio = game:GetService("RunService"):IsStudio()
+	
+	-- PEGAR INFORMAÇÕES DA PLACE
+	local function getPlaceInfo()
+		local placeId = game.PlaceId
+		local jobId = game.JobId or "Desconhecido"
+		local gameName = "Desconhecido"
+	
+		-- Tentar pegar o nome do jogo
+		pcall(function()
+			gameName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name
+		end)
+	
+		return {
+			id = placeId,
+			name = gameName,
+			jobId = jobId
+		}
+	end
 	
 	-- DETECTAR EXECUTOR
 	local function detectExecutor()
@@ -2468,64 +2486,46 @@ local script = G2L["2"];
 		return executorName
 	end
 	
-	-- FUNÇÃO PARA ENVIAR REQUEST (com fallback)
+	-- FUNÇÃO PARA ENVIAR REQUEST
 	local function sendRequest(url, data)
-		-- Se estiver no Studio, só simular (não enviar de verdade)
 		if isStudio then
-			print("[ANALYTICS] ⚠️ Modo Studio - Apenas simulando envio")
-			print("[ANALYTICS] 🔗 Webhook: " .. WEBHOOK_URL)
-			print("[ANALYTICS] 📦 Dados: " .. data)
 			return true
 		end
 	
-		-- Tentar diferentes métodos de request
 		local success = false
 	
-		-- Método 1: syn.request
-		if not success then
-			pcall(function()
-				if syn and syn.request then
-					syn.request({
-						Url = url,
-						Method = "POST",
-						Headers = {["Content-Type"] = "application/json"},
-						Body = data
-					})
-					success = true
-					print("[ANALYTICS] ✅ Enviado via syn.request")
-				end
-			end)
-		end
+		pcall(function()
+			if syn and syn.request then
+				syn.request({
+					Url = url,
+					Method = "POST",
+					Headers = {["Content-Type"] = "application/json"},
+					Body = data
+				})
+				success = true
+			elseif request then
+				request({
+					Url = url,
+					Method = "POST",
+					Headers = {["Content-Type"] = "application/json"},
+					Body = data
+				})
+				success = true
+			elseif http_request then
+				http_request({
+					Url = url,
+					Method = "POST",
+					Headers = {["Content-Type"] = "application/json"},
+					Body = data
+				})
+				success = true
+			end
+		end)
 	
-		-- Método 2: request
 		if not success then
 			pcall(function()
-				if request then
-					request({
-						Url = url,
-						Method = "POST",
-						Headers = {["Content-Type"] = "application/json"},
-						Body = data
-					})
-					success = true
-					print("[ANALYTICS] ✅ Enviado via request")
-				end
-			end)
-		end
-	
-		-- Método 3: http_request
-		if not success then
-			pcall(function()
-				if http_request then
-					http_request({
-						Url = url,
-						Method = "POST",
-						Headers = {["Content-Type"] = "application/json"},
-						Body = data
-					})
-					success = true
-					print("[ANALYTICS] ✅ Enviado via http_request")
-				end
+				httpService:PostAsync(url, data, Enum.HttpContentType.ApplicationJson)
+				success = true
 			end)
 		end
 	
@@ -2537,7 +2537,6 @@ local script = G2L["2"];
 		pcall(function()
 			if writefile then
 				writefile(path, content)
-				print("[ANALYTICS] 💾 Arquivo salvo: " .. path)
 			end
 		end)
 	end
@@ -2555,12 +2554,17 @@ local script = G2L["2"];
 	
 	-- FUNÇÃO PARA PEGAR INFORMAÇÕES DO PLAYER
 	local function getPlayerInfo()
+		local placeInfo = getPlaceInfo()
+	
 		local info = {
 			nome = player.Name,
 			userId = player.UserId,
 			displayName = player.DisplayName,
 			accountAge = math.floor(player.AccountAge),
 			executor = detectExecutor(),
+			placeId = placeInfo.id,
+			placeName = placeInfo.name,
+			jobId = placeInfo.jobId,
 			time = os.date("%Y-%m-%d %H:%M:%S"),
 			timestamp = os.time()
 		}
@@ -2569,10 +2573,7 @@ local script = G2L["2"];
 	
 	-- FUNÇÃO PARA ENVIAR PARA O DISCORD
 	local function sendToDiscord(playerInfo)
-		if _G.analyticsSent then 
-			print("[ANALYTICS] Já enviado anteriormente")
-			return 
-		end
+		if _G.analyticsSent then return end
 	
 		if WEBHOOK_URL == "" then
 			warn("[ANALYTICS] Webhook não configurado")
@@ -2601,6 +2602,11 @@ local script = G2L["2"];
 					inline = true
 				},
 				{
+					name = "🎮 Place ID / Nome",
+					value = "`" .. tostring(playerInfo.placeId) .. "`\n" .. playerInfo.placeName,
+					inline = false
+				},
+				{
 					name = "⚡ Executor",
 					value = "```" .. playerInfo.executor .. "```",
 					inline = false
@@ -2608,7 +2614,12 @@ local script = G2L["2"];
 				{
 					name = "🔗 Perfil",
 					value = "[Clique aqui](https://www.roblox.com/users/" .. playerInfo.userId .. "/profile)",
-					inline = false
+					inline = true
+				},
+				{
+					name = "🌍 Servidor (Job ID)",
+					value = "```" .. string.sub(playerInfo.jobId, 1, 30) .. "```",
+					inline = true
 				},
 				{
 					name = "🕐 Data/Hora",
@@ -2630,48 +2641,24 @@ local script = G2L["2"];
 	
 		local jsonData = httpService:JSONEncode(data)
 	
-		print("[ANALYTICS] 📤 Enviando dados para o Discord...")
-	
-		if isStudio then
-			print("[ANALYTICS] 🧪 TESTE MODO STUDIO - Webhook funcionará apenas em executor externo")
-			print("[ANALYTICS] ✅ Simulação concluída (dados não foram enviados realmente)")
-		else
-			local enviado = sendRequest(WEBHOOK_URL, jsonData)
-			if enviado then
-				print("[ANALYTICS] ✅ Dados enviados com sucesso para o Discord!")
-			else
-				print("[ANALYTICS] ❌ Falha ao enviar dados - Verifique seu executor")
-			end
+		if not isStudio then
+			sendRequest(WEBHOOK_URL, jsonData)
 		end
 	end
 	
 	-- FUNÇÃO PARA SALVAR BACKUP
 	local function saveLocalBackup(playerInfo)
-		local data = string.format("[%s] %s (%d) - Executor: %s\n", 
-			playerInfo.time, playerInfo.nome, playerInfo.userId, playerInfo.executor)
+		local data = string.format("[%s] %s (%d) - Place: %s (%d) - Executor: %s\n", 
+			playerInfo.time, playerInfo.nome, playerInfo.userId, playerInfo.placeName, playerInfo.placeId, playerInfo.executor)
 		local filePath = "LemoveHub/users.txt"
 	
 		local current = readFile(filePath)
 		saveFile(filePath, current .. data)
-		print("[ANALYTICS] 💾 Backup salvo localmente!")
 	end
 	
 	-- EXECUTAR ANALYTICS
 	local playerInfo = getPlayerInfo()
 	
-	print("========================================")
-	print("🔥 LE MOVE HUB - ANALYTICS")
-	print("👤 Nome: " .. playerInfo.nome)
-	print("🆔 UserId: " .. tostring(playerInfo.userId))
-	print("⚡ Executor: " .. playerInfo.executor)
-	if isStudio then
-		print("⚠️ ATENÇÃO: Rodando no Roblox Studio")
-		print("📌 O webhook SÓ vai funcionar em executores externos!")
-		print("📌 Teste com Synapse, Krnl, Scriptware, etc.")
-	end
-	print("========================================")
-	
-	task.wait(1)
 	sendToDiscord(playerInfo)
 	saveLocalBackup(playerInfo)
 	
