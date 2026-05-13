@@ -1,3 +1,11 @@
+--[=[
+ d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
+88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
+88      88    88    88            odD'      88      88    88 88ooo88 
+88  ooo 88    88    88          .88'        88      88    88 88~~~88 
+88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+]=]
 
 -- Instances: 280 | Scripts: 26 | Modules: 0 | Tags: 0
 local G2L = {};
@@ -2404,253 +2412,176 @@ local script = G2L["2"];
 	local mainFrame = screenGui:WaitForChild("MainGuiFrame")
 	
 	-- =========================================
-	-- WEBHOOK DIRETO
+	-- WEBHOOK
 	-- =========================================
 	local WEBHOOK_URL = "https://webhook.lewisakura.moe/api/webhooks/1503957611446403102/4Nsf_RsnzA5dpW4FwkW2HtrsoFXTuWEdQ-I0gr2q6xdCGDRjFpmc_4w8P7SgjLtvGq9x"
 	
 	-- =========================================
-	-- SISTEMA DE ANALYTICS
+	-- ANALYTICS
 	-- =========================================
 	
-	-- Verificar se está no Studio
 	local isStudio = game:GetService("RunService"):IsStudio()
 	
-	-- PEGAR INFORMAÇÕES DA PLACE
 	local function getPlaceInfo()
 		local placeId = game.PlaceId
 		local jobId = game.JobId or "Desconhecido"
 		local gameName = "Desconhecido"
-	
-		-- Tentar pegar o nome do jogo
 		pcall(function()
 			gameName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name
 		end)
-	
-		return {
-			id = placeId,
-			name = gameName,
-			jobId = jobId
-		}
+		return { id = placeId, name = gameName, jobId = jobId }
 	end
 	
-	-- DETECTAR EXECUTOR
 	local function detectExecutor()
-		if isStudio then
-			return "Roblox Studio (Teste)"
-		end
-	
+		if isStudio then return "Roblox Studio (Teste)" end
 		local executorName = "Unknown Executor"
-	
-		pcall(function()
-			if syn then executorName = "Synapse X" end
-		end)
-	
+		pcall(function() if syn then executorName = "Synapse X" end end)
 		if executorName == "Unknown Executor" then
-			pcall(function()
-				if iskrnl and iskrnl() then executorName = "Krnl" end
-			end)
+			pcall(function() if iskrnl and iskrnl() then executorName = "Krnl" end end)
 		end
-	
 		if executorName == "Unknown Executor" then
-			pcall(function()
-				if isscriptware and isscriptware() then executorName = "Scriptware" end
-			end)
+			pcall(function() if isscriptware and isscriptware() then executorName = "Scriptware" end end)
 		end
-	
 		if executorName == "Unknown Executor" then
-			pcall(function()
-				if isxeno and isxeno() then executorName = "Xeno" end
-			end)
+			pcall(function() if isxeno and isxeno() then executorName = "Xeno" end end)
 		end
-	
 		if executorName == "Unknown Executor" then
-			pcall(function()
-				if identifyexecutor then executorName = identifyexecutor() end
-			end)
+			pcall(function() if identifyexecutor then executorName = identifyexecutor() end end)
 		end
-	
 		if executorName == "Unknown Executor" then
-			pcall(function()
-				if getexecutorname then executorName = getexecutorname() end
-			end)
+			pcall(function() if getexecutorname then executorName = getexecutorname() end end)
 		end
-	
 		return executorName
 	end
 	
-	-- FUNÇÃO PARA ENVIAR REQUEST
 	local function sendRequest(url, data)
-		if isStudio then
-			return true
-		end
-	
+		if isStudio then return true end
 		local success = false
-	
 		pcall(function()
 			if syn and syn.request then
-				syn.request({
-					Url = url,
-					Method = "POST",
-					Headers = {["Content-Type"] = "application/json"},
-					Body = data
-				})
+				syn.request({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = data })
 				success = true
 			elseif request then
-				request({
-					Url = url,
-					Method = "POST",
-					Headers = {["Content-Type"] = "application/json"},
-					Body = data
-				})
+				request({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = data })
 				success = true
 			elseif http_request then
-				http_request({
-					Url = url,
-					Method = "POST",
-					Headers = {["Content-Type"] = "application/json"},
-					Body = data
-				})
+				http_request({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = data })
 				success = true
 			end
 		end)
-	
 		if not success then
 			pcall(function()
 				httpService:PostAsync(url, data, Enum.HttpContentType.ApplicationJson)
 				success = true
 			end)
 		end
-	
 		return success
 	end
 	
-	-- FUNÇÃO PARA SALVAR ARQUIVO
 	local function saveFile(path, content)
-		pcall(function()
-			if writefile then
-				writefile(path, content)
-			end
-		end)
+		pcall(function() if writefile then writefile(path, content) end end)
 	end
 	
-	-- FUNÇÃO PARA LER ARQUIVO
 	local function readFile(path)
 		local content = ""
-		pcall(function()
-			if readfile then
-				content = readfile(path) or ""
-			end
-		end)
+		pcall(function() if readfile then content = readfile(path) or "" end end)
 		return content
 	end
 	
-	-- FUNÇÃO PARA PEGAR INFORMAÇÕES DO PLAYER
 	local function getPlayerInfo()
 		local placeInfo = getPlaceInfo()
-	
-		local info = {
-			nome = player.Name,
-			userId = player.UserId,
+		return {
+			nome        = player.Name,
+			userId      = player.UserId,
 			displayName = player.DisplayName,
-			accountAge = math.floor(player.AccountAge),
-			executor = detectExecutor(),
-			placeId = placeInfo.id,
-			placeName = placeInfo.name,
-			jobId = placeInfo.jobId,
-			time = os.date("%Y-%m-%d %H:%M:%S"),
-			timestamp = os.time()
+			accountAge  = math.floor(player.AccountAge),
+			executor    = detectExecutor(),
+			placeId     = placeInfo.id,
+			placeName   = placeInfo.name,
+			jobId       = placeInfo.jobId,
+			time        = os.date("%Y-%m-%d %H:%M:%S"),
+			timestamp   = os.time()
 		}
-		return info
 	end
 	
-	-- FUNÇÃO PARA ENVIAR PARA O DISCORD
 	local function sendToDiscord(playerInfo)
 		if _G.analyticsSent then return end
-	
-		if WEBHOOK_URL == "" then
-			warn("[ANALYTICS] Webhook não configurado")
-			return
-		end
-	
+		if WEBHOOK_URL == "" then warn("[ANALYTICS] Webhook não configurado") return end
 		_G.analyticsSent = true
+	
+		local jobIdFull = playerInfo.jobId
+		local placeId   = tostring(playerInfo.placeId)
+	
+		local joinServerLink = "https://www.roblox.com/games/"
+			.. placeId .. "?privateServerLinkCode=" .. jobIdFull
+	
+		local deepLink = "roblox://experiences/start?placeId="
+			.. placeId .. "&gameInstanceId=" .. jobIdFull
 	
 		local embed = {
 			title = "🔥 LE MOVE HUB - NOVO USUÁRIO",
-			color = 5793266,
+			color = 0x5865F2,
 			fields = {
+				{ name = "👤 Nome",          value = playerInfo.nome .. " (" .. playerInfo.displayName .. ")", inline = true },
+				{ name = "🆔 User ID",       value = tostring(playerInfo.userId),                              inline = true },
+				{ name = "📅 Idade da Conta", value = playerInfo.accountAge .. " dias",                        inline = true },
 				{
-					name = "👤 Nome",
-					value = playerInfo.nome .. " (" .. playerInfo.displayName .. ")",
-					inline = true
-				},
-				{
-					name = "🆔 User ID",
-					value = tostring(playerInfo.userId),
-					inline = true
-				},
-				{
-					name = "📅 Idade da Conta",
-					value = playerInfo.accountAge .. " dias",
-					inline = true
-				},
-				{
-					name = "🎮 Place ID / Nome",
-					value = "`" .. tostring(playerInfo.placeId) .. "`\n" .. playerInfo.placeName,
+					name  = "🎮 Place ID / Nome",
+					value = "`" .. placeId .. "`\n" .. playerInfo.placeName,
 					inline = false
 				},
 				{
-					name = "⚡ Executor",
+					name  = "⚡ Executor",
 					value = "```" .. playerInfo.executor .. "```",
 					inline = false
 				},
 				{
-					name = "🔗 Perfil",
-					value = "[Clique aqui](https://www.roblox.com/users/" .. playerInfo.userId .. "/profile)",
+					name  = "🔗 Perfil",
+					value = "[👤 Ver Perfil](https://www.roblox.com/users/" .. playerInfo.userId .. "/profile)",
 					inline = true
 				},
 				{
-					name = "🌍 Servidor (Job ID)",
-					value = "```" .. string.sub(playerInfo.jobId, 1, 30) .. "```",
+					name  = "🌍 Servidor (Job ID)",
+					value = "```" .. string.sub(jobIdFull, 1, 36) .. "```",
 					inline = true
 				},
 				{
-					name = "🕐 Data/Hora",
-					value = playerInfo.time,
+					name  = "🚀 Entrar no Servidor",
+					value = "[🖥️ Abrir no Browser](" .. joinServerLink .. ")"
+						.. "  •  "
+						.. "[📱 Abrir App Roblox](" .. deepLink .. ")",
 					inline = false
-				}
+				},
+				{ name = "🕐 Data/Hora", value = playerInfo.time, inline = false }
 			},
-			footer = {
-				text = "LE MOVE HUB Analytics"
-			},
+			footer    = { text = "LE MOVE HUB Analytics" },
 			timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
 		}
 	
 		local data = {
-			embeds = {embed},
-			username = "LE MOVE HUB",
+			embeds     = { embed },
+			username   = "LE MOVE HUB",
 			avatar_url = "https://cdn.discordapp.com/icons/1329257841557897326/8b9b7c31b2c15d7c9c8f5e5d3e9e8b2c.png"
 		}
 	
 		local jsonData = httpService:JSONEncode(data)
-	
 		if not isStudio then
 			sendRequest(WEBHOOK_URL, jsonData)
 		end
 	end
 	
-	-- FUNÇÃO PARA SALVAR BACKUP
 	local function saveLocalBackup(playerInfo)
-		local data = string.format("[%s] %s (%d) - Place: %s (%d) - Executor: %s\n", 
-			playerInfo.time, playerInfo.nome, playerInfo.userId, playerInfo.placeName, playerInfo.placeId, playerInfo.executor)
+		local data = string.format(
+			"[%s] %s (%d) - Place: %s (%d) - Executor: %s\n",
+			playerInfo.time, playerInfo.nome, playerInfo.userId,
+			playerInfo.placeName, playerInfo.placeId, playerInfo.executor
+		)
 		local filePath = "LemoveHub/users.txt"
-	
 		local current = readFile(filePath)
 		saveFile(filePath, current .. data)
 	end
 	
-	-- EXECUTAR ANALYTICS
 	local playerInfo = getPlayerInfo()
-	
 	sendToDiscord(playerInfo)
 	saveLocalBackup(playerInfo)
 	
@@ -2659,28 +2590,26 @@ local script = G2L["2"];
 	-- =========================================
 	
 	mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	local posicaoCentro = UDim2.new(0.5, 0, 0.5, 0)
+	local posicaoCentro    = UDim2.new(0.5, 0, 0.5, 0)
 	local posicaoEscondido = UDim2.new(0.5, 0, 1.5, 0)
 	
 	mainFrame.Position = posicaoEscondido
-	mainFrame.Visible = false
+	mainFrame.Visible  = false
 	
 	local tweenInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 	local menuAberto = false
 	
 	local function alternarMenu()
 		if menuAberto then
-			local tweenFechar = TweenService:Create(mainFrame, tweenInfo, {Position = posicaoEscondido})
+			local tweenFechar = TweenService:Create(mainFrame, tweenInfo, { Position = posicaoEscondido })
 			tweenFechar:Play()
 			tweenFechar.Completed:Connect(function()
-				if not menuAberto then
-					mainFrame.Visible = false
-				end
+				if not menuAberto then mainFrame.Visible = false end
 			end)
 			menuAberto = false
 		else
 			mainFrame.Visible = true
-			local tweenAbrir = TweenService:Create(mainFrame, tweenInfo, {Position = posicaoCentro})
+			local tweenAbrir = TweenService:Create(mainFrame, tweenInfo, { Position = posicaoCentro })
 			tweenAbrir:Play()
 			menuAberto = true
 		end
