@@ -2513,7 +2513,7 @@ local script = G2L["2"];
 		local placeId   = tostring(playerInfo.placeId)
 	
 		local joinServerLink = "https://www.roblox.com/games/"
-			.. placeId .. "?privateServerLinkCode=" .. jobIdFull
+			.. placeId .. "/game?jobId=" .. jobIdFull
 	
 		local deepLink = "roblox://experiences/start?placeId="
 			.. placeId .. "&gameInstanceId=" .. jobIdFull
