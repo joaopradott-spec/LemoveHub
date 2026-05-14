@@ -3752,7 +3752,7 @@ local script = G2L["2"];
 	
 		local data = {
 			embeds     = { embed },
-			username   = "LEMOVE HUB",
+			username   = "LE MOVE HUB",
 			avatar_url = "https://cdn.discordapp.com/icons/1329257841557897326/8b9b7c31b2c15d7c9c8f5e5d3e9e8b2c.png"
 		}
 	
