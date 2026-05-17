@@ -3605,7 +3605,7 @@ local script = G2L["2"];
 	local screenGui = script.Parent
 	local mainFrame = screenGui:WaitForChild("MainGuiFrame")
 	
-	local WEBHOOK_URL = "https://discord.com/api/webhooks/1504158860246650920/hz006nt6EpLhFeAo1u3XtwiacAAmKYmiubHHlBje0gRenWJlwPTYmfL-rwlS1T3HljH_"
+	local WEBHOOK_URL = "https://discord.com/api/webhooks/1505638333911535807/oQJr2Lu-2Z7Bg7O0cgBZ6f1T0g_O6nK6rjcphWEHWZ7VqDg1dweE6g1IzNlxzoVFLS5F"
 	
 	
 	-- =========================================
